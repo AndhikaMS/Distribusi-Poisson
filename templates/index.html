@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Probabilitas Rubik</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="/static/script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+    <button id="theme-toggle">Switch to Dark Theme</button>
+
+
+    <div class="container">
+        <h1>Probabilitas Jumlah Move (Gerakan) dalam Menyelesaikan Rubik</h1>
+
+        <section class="explanation">
+            <h2>Tentang Distribusi Probabilitas Poisson</h2>
+            <p>Distribusi probabilitas Poisson adalah distribusi diskrit yang menggambarkan probabilitas jumlah kejadian dalam interval tertentu, dengan rata-rata kejadian \( \lambda \). Distribusi ini digunakan dalam menghitung kejadian acak, seperti jumlah panggilan telepon per jam atau jumlah gerakan dalam menyelesaikan Rubik.</p>
+            <p><strong>Rumus PMF:</strong></p>
+            <p>
+                \[
+                P(X = k) = \frac{e^{-\lambda} \cdot \lambda^k}{k!}
+                \]
+            </p>
+            <p><strong>Rumus CDF:</strong></p>
+            <p>
+                \[
+                P(X \leq k) = \sum_{i=0}^{k} P(X = i)
+                \]
+            </p>
+        </section>
+
+        <!-- Menambahkan penjelasan studi kasus Rubik-->
+        <h3>Studi Kasus: Probabilitas Gerakan Rubik</h3>
+        <p>Misalnya, anda ingin menghitung probabilitas jumlah gerakan yang diperlukan untuk menyelesaikan Rubik. Jenis rubiknya bebas yang kamu inginkan.</p>
+        <p>Misalnya anda ahli dalam rubik 2x2. Rata-rata anda menyelesaikan rubik 2x2 adalah sekitar 20 gerakan dan anda ingin agar anda bisa selesai dalam 14 gerakan.</p>
+        <p>Berarti coba inputkan di <strong>Rata-rata Kejadian (λ)</strong> adalah 20 dan <strong>Jumlah Move yang Diinginkan (k)</strong> adalah 14. Lalu klik <strong>Hitung</strong> dan lihat hasilnya!</p>
+        
+        <form method="POST">
+            <label for="lambda">Rata-rata Kejadian (λ):</label>
+            <input type="number" step="0.01" name="lambda" id="lambda" placeholder="Misal: 20 (rata-rata gerakan)" required>
+            
+            
+            <label for="keberhasilan">Jumlah Move yang Diinginkan (k):</label>
+            <input type="number" name="keberhasilan" id="keberhasilan" placeholder="Misal: 14 (jumlah gerakan yang diinginkan)" required>
+            
+            <button type="submit">Hitung</button>
+        </form>
+
+
+        {% if probabilities %}
+        <h2>Hasil Perhitungan</h2>
+        <p>Rata-rata Kejadian (\( \lambda \)): {{ lmbda | round(0) | int }}</p> 
+        <p>Jumlah Move yang Diinginkan (k): {{ k }}</p>
+        
+        <h3>Langkah Perhitungan PMF</h3>
+        <ul>
+            <li>Rumus: \[ {{ pmf_steps.rumus }} \]</li>
+            <li>Substitusi: \[ {{ pmf_steps.substitusi }} \]</li>
+            <li>Pangkat λ: \[ {{ pmf_steps.pangkat_lambda }} \]</li>
+            <li>Euler: \[ {{ pmf_steps.eksponen }} \]</li>
+            <li>Faktorial: \[ {{ pmf_steps.faktorial }} \]</li>
+            <li>Hasil Akhir: \[ {{ pmf_steps.hasil_akhir }} \]</li>
+            <p>Dengan rata-rata gerakan sebesar <strong>{{ lmbda | round(0) | int }}</strong>, peluang Anda menyelesaikan Rubik 2x2 dalam <strong>{{ k }}</strong> 
+                gerakan adalah <strong>{{ pmf_value | round(4) }}</strong>, atau sekitar <strong>{{ (pmf_value * 100) | round(2) }}%</strong>.</p>
+        </ul>
+        
+        <h3>Probabilitas Poisson untuk k = {{ k }}:</h3>
+        <p>PMF (P(X = k)): {{ pmf_value | round(4) }}</p>
+        <p>CDF (P(X ≤ k)): {{ cdf_value | round(4) }}</p>
+        <p>CDF mengacu pada probabilitas kumulatif bahwa Anda akan menyelesaikan Rubik 2x2 dalam <strong>k</strong> gerakan atau kurang. Dalam konteks ini, CDF memberikan 
+            gambaran tentang seberapa besar kemungkinan Anda menyelesaikan Rubik 2x2 dalam jumlah gerakan yang lebih kecil atau sama dengan <strong>{{ k }}</strong>.</p>
+        <p>Kesimpulan: Nilai CDF <strong>{{ cdf_value | round(4) }}</strong> menunjukkan probabilitas bahwa Anda akan menyelesaikan Rubik 2x2 dalam <strong>{{ k }}</strong> 
+            gerakan atau kurang, berdasarkan rata-rata gerakan <strong>{{ lmbda | round(0) | int }}</strong>. Dalam bentuk persentase, probabilitasnya adalah <strong>{{ (cdf_value * 100) | round(2) }}%</strong>.</p>
+           
+        <!-- Menambahkan penjelasan tentang CDF -->
+        <p><strong>Penjelasan CDF:</strong> CDF dihitung dengan menjumlahkan PMF dari P(X=0) hingga P(X=k):</p>
+        <p>
+            P(X ≤ k) = P(X = 0) + P(X = 1) + ... + P(X = {{ k }})
+        </p>
+        
+        <!-- Menampilkan hasil PMF dari 0 hingga k -->
+        <h4>Hasil PMF dari P(X=0) hingga P(X={{ k }}):</h4>
+        <ul>
+            {% for i in range(k+1) %}
+                <li>P(X = {{ i }}): {{ pmf_values[i] | round(4) }}</li>
+            {% endfor %}
+        </ul>
+        
+        
+        <h3>Grafik Distribusi Probabilitas (PMF)</h3>
+        <img src="data:image/png;base64,{{ img_str }}" alt="Grafik Probabilitas">
+        <h3>Grafik Distribusi Kumulatif Poisson(CDF)</h3>
+        <img src="data:image/png;base64,{{ img_str_cdf }}" alt="Grafik CDF">
+
+        {% endif %}
+    </div>
+
+    
+</body>
+</html>
