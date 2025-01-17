@@ -6,11 +6,13 @@ import base64
 
 app = Flask(__name__)
 
-def poisson_pmf(k, lmbda):
+# Fungsi untuk menghitung distribusi Poisson (PMF)
+def poisson_pmf(lmbda, k):
     return (math.exp(-lmbda) * (lmbda ** k)) / math.factorial(k)
 
-def poisson_cdf(k, lmbda):
-    return sum(poisson_pmf(i, lmbda) for i in range(k + 1))
+# Fungsi untuk menghitung distribusi kumulatif Poisson (CDF)
+def poisson_cdf(lmbda, k):
+    return sum(poisson_pmf(lmbda, i) for i in range(k + 1))
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -19,9 +21,7 @@ def index():
         k = int(request.form["keberhasilan"])  # Jumlah kejadian yang diinginkan (k)
 
         # Hitung PMF
-        numerator = (lmbda ** k) * math.exp(-lmbda)
-        denominator = math.factorial(k)
-        pmf_value = numerator / denominator
+        pmf_value = poisson_pmf(lmbda, k)
 
         # Hitung CDF
         cdf_value = poisson_cdf(lmbda, k)
