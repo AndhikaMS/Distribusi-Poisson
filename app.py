@@ -3,17 +3,14 @@ import math
 import matplotlib.pyplot as plt
 from io import BytesIO
 import base64
-from scipy.stats import poisson  # Menggunakan scipy untuk distribusi Poisson
 
 app = Flask(__name__)
 
-# Fungsi untuk menghitung distribusi Poisson (PMF)
-def poisson_pmf(lmbda, k):
-    return poisson.pmf(k, lmbda)
+def poisson_pmf(k, lmbda):
+    return (math.exp(-lmbda) * (lmbda ** k)) / math.factorial(k)
 
-# Fungsi untuk menghitung distribusi kumulatif Poisson (CDF)
-def poisson_cdf(lmbda, k):
-    return poisson.cdf(k, lmbda)
+def poisson_cdf(k, lmbda):
+    return sum(poisson_pmf(i, lmbda) for i in range(k + 1))
 
 @app.route("/", methods=["GET", "POST"])
 def index():
